@@ -79,7 +79,7 @@ RUN find /usr/local/lib/python3.12/site-packages -name __pycache__ -prune -exec 
     && ldconfig
 
 WORKDIR /app
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
 RUN pip install --no-cache-dir .
 

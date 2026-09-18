@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "M1: stateless in-memory DICOM pre-persistence policy gateway demo, built on fastDICOMstructure"
 readme = "README.md"
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Kris Kokomoor" }]
 dependencies = [
     "fastapi>=0.110",
     "uvicorn>=0.27",
