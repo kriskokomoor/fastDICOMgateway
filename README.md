@@ -129,7 +129,7 @@ docker build -f Dockerfile --build-context structure=../fastDICOMstructure -t fa
 docker run -d --rm --read-only --user 1000:1000 -p 127.0.0.1:8080:8080 fastdicom-gateway:demo
 ```
 
-Run the local test suite (`pytest -v`, expect `66 passed, 1 skipped` — the one skip is an opt-in
+Run the local test suite (`pytest -v`, expect `77 passed, 1 skipped` — the one skip is an opt-in
 live Cloud Run test).
 
 ### GCP / Healthcare API demonstration
