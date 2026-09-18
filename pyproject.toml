@@ -11,6 +11,13 @@ dependencies = [
     "uvicorn>=0.27",
     "google-auth>=2.28",
     "requests>=2.31",
+    # Interim GitHub-release dependency, not PyPI: fastDICOMstructure is not
+    # yet published to PyPI, so this pins the immutable v0.1.0 tag directly.
+    # fastdicomattrs is not declared here -- this project never imports it
+    # directly (only fastdicomstructure, which declares its own attrs
+    # v0.2.0 dependency); it resolves transitively. Once fastdicomstructure
+    # is on PyPI this becomes an ordinary "fastdicomstructure>=0.1.0".
+    "fastdicomstructure @ git+https://github.com/kriskokomoor/fastDICOMstructure.git@v0.1.0",
 ]
 
 [project.optional-dependencies]
@@ -23,6 +30,13 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+# Required by hatchling for the fastdicomstructure PEP 508 direct-reference
+# (git+https://...) dependency above -- hatchling refuses direct references
+# in [project.dependencies] unless explicitly allowed. Same interim
+# GitHub-release rationale as that dependency itself.
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fastdicom_gateway"]

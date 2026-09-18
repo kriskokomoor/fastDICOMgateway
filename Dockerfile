@@ -81,7 +81,16 @@ RUN find /usr/local/lib/python3.12/site-packages -name __pycache__ -prune -exec 
 WORKDIR /app
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
-RUN pip install --no-cache-dir .
+# fastdicomstructure (and its own attrs dependency) are already provided
+# above via COPY --from=structure/--from=attrs-builder, not pip -- this
+# minimal runtime image deliberately has no git/compiler/cmake (see this
+# stage's own header comment), so letting `pip install .` resolve its own
+# declared fastdicomstructure dependency here would try to git-clone and
+# rebuild it from source and fail. Install the package's other (real, not
+# vendored) dependencies normally, then install the package itself with
+# --no-deps so it never attempts that redundant resolution.
+RUN pip install --no-cache-dir "fastapi>=0.110" "uvicorn>=0.27" "google-auth>=2.28" "requests>=2.31" \
+    && pip install --no-cache-dir --no-deps .
 
 ENV FASTDICOMATTRS_LIB=/usr/local/lib/libfastdicomattrs_c.so \
     PYTHONDONTWRITEBYTECODE=1 \
