@@ -6,6 +6,29 @@ name: CI
 # never run here: no GCP credentials exist in this workflow, so those live
 # tests self-skip automatically. See docs/EVIDENCE_INDEX.md for where that
 # evidence actually lives.
+#
+# Two distinct dependency topologies are in play here, deliberately kept
+# separate (see B2f in docs/release/PUBLIC_REPOSITORY_HISTORY_AND_PROVENANCE.md):
+#
+#   A. Python/runtime dependency topology -- what an external `pip install`
+#      actually gets. Gateway's own pyproject.toml declares fastdicomstructure
+#      as a real dependency pinned to the immutable public v0.1.0 tag, which
+#      in turn declares fastdicomattrs pinned to v0.2.0. `pip install -e
+#      ".[dev]"` below resolves this chain with no sibling checkout, no
+#      FASTDICOMSTRUCTURE_REPO/FASTDICOMATTRS_REPO, and no FASTDICOMATTRS_LIB.
+#
+#   B. M3's Docker build-input topology -- the Dockerfile's multi-stage build
+#      still needs fastDICOMstructure's and fastDICOMattrs' *source trees* as
+#      named BuildKit build contexts (it compiles attrs' native library
+#      inside the image itself). That is a Docker build-input requirement,
+#      unrelated to how Gateway's own Python process resolves its
+#      dependencies. Those source checkouts are fetched -- pinned to the
+#      exact same released tags as topology A -- only after the ordinary
+#      suite has already run cleanly against the installed dependency chain,
+#      specifically so they cannot be present on disk (and therefore cannot
+#      be picked up by fastdicom_gateway.transform's own sibling-checkout
+#      convention, which shares this project's default-path formula) during
+#      that run.
 
 on:
   push:
@@ -23,65 +46,71 @@ jobs:
         with:
           path: fastDICOMgateway
 
-      # fastdicom_gateway.transform imports fastdicomstructure at test time
-      # (no mocking), which since the A0 semantic-engine extraction is a
-      # pure-Python policy/orchestration layer with no engine of its own --
-      # it re-exports fastdicomattrs' DICOM parser/writer/ABI. Both are
-      # checked out as true sibling directories, matching this project's
-      # own local development convention (README.md "Prerequisites"); M3's
-      # container build also needs both as named Docker build contexts
-      # (see Dockerfile's header comment).
-      # TODO(release): pin `ref` on both checkouts below to the exact
-      # fastDICOMstructure/fastDICOMattrs release tags once they are
-      # published (see RELEASE_PROVENANCE.md). Currently unpinned
-      # (default-branch heads) rather than referencing an internal,
-      # non-public commit identifier.
-      - name: Checkout fastDICOMstructure
-        uses: actions/checkout@v5
-        with:
-          repository: kriskokomoor/fastDICOMstructure
-          path: fastDICOMstructure
-
-      - name: Checkout fastDICOMattrs
-        uses: actions/checkout@v5
-        with:
-          repository: kriskokomoor/fastDICOMattrs
-          path: fastDICOMattrs
-
       - name: Install strace
         run: sudo apt-get update && sudo apt-get install -y strace
 
-      # ABI only, no tests/bench -- this workflow doesn't need
-      # fastDICOMattrs' own test suite (that repository verifies itself in
-      # its own CI); it just needs the compiled shared library
-      # fastdicom_gateway.transform loads (via fastdicomstructure's
-      # re-export) through FASTDICOMATTRS_LIB.
-      - name: Build fastDICOMattrs (ABI only)
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Install fastDICOMgateway (resolves fastdicomstructure v0.1.0 / fastdicomattrs v0.2.0 from their declared dependencies)
+        working-directory: fastDICOMgateway
+        run: python -m pip install -e ".[dev]"
+
+      - name: Report resolved dependency identity
+        working-directory: fastDICOMgateway
+        run: |
+          python -c "
+          import importlib.metadata as im
+          import fastdicom_gateway, fastdicomstructure, fastdicomattrs
+          print('fastdicom-gateway', im.version('fastdicom-gateway'), '->', fastdicom_gateway.__file__)
+          print('fastdicomstructure', im.version('fastdicomstructure'), '->', fastdicomstructure.__file__)
+          print('fastdicomattrs', im.version('fastdicomattrs'), '->', fastdicomattrs.__file__)
+          print('native library ->', fastdicomattrs._lib._name)
+          "
+
+      # No sibling fastDICOMstructure/fastDICOMattrs checkout exists on disk
+      # at this point -- everything here runs against the installed
+      # dependency chain reported above, including M2's strace-observed
+      # validation. Only test_m3_validation's own Docker-build test is
+      # deselected; it runs separately below, once its build-input source
+      # trees exist. M4/M5's live-cloud tests self-skip (no GCP
+      # credentials/env vars are set in this workflow).
+      - name: Test (installed dependency chain)
+        working-directory: fastDICOMgateway
+        run: python -m pytest -v --deselect tests/test_m3_validation.py::test_m3_end_to_end_run_passes_read_only_with_corrected_scenario_d
+
+      - name: Checkout fastDICOMstructure (M3 Docker build input only, pinned to v0.1.0)
+        uses: actions/checkout@v5
+        with:
+          repository: kriskokomoor/fastDICOMstructure
+          ref: v0.1.0
+          path: fastDICOMstructure
+
+      - name: Checkout fastDICOMattrs (M3 Docker build input only, pinned to v0.2.0)
+        uses: actions/checkout@v5
+        with:
+          repository: kriskokomoor/fastDICOMattrs
+          ref: v0.2.0
+          path: fastDICOMattrs
+
+      # M3's own scenario-verification code (not Gateway's runtime path)
+      # independently re-imports fastdicomstructure/fastdicomattrs from the
+      # sibling checkouts above to re-parse and cross-check the container's
+      # HTTP response -- see fastdicom_gateway.validation.scenarios
+      # run_scenario_a's own sys.path.insert against structure_repo_root().
+      # That import chain needs attrs' compiled native library, which is
+      # not built anywhere else on the host in this workflow (the
+      # container image builds and uses its own copy internally).
+      - name: Build fastDICOMattrs (ABI only, M3 scenario-verification input)
         working-directory: fastDICOMattrs
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
             -DFDS_BUILD_TESTS=OFF -DFDS_BUILD_BENCH=OFF -DFDS_BUILD_ABI=ON
           cmake --build build --parallel
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.x"
-
-      - name: Install fastDICOMgateway
-        working-directory: fastDICOMgateway
-        run: python -m pip install -e ".[dev]"
-
-      # Runs the full existing suite, including M2's strace-observed and
-      # M3's real (local, credential-free) Docker validation -- both
-      # already part of this suite whenever strace/docker are available,
-      # not added here. M4/M5's live-cloud tests self-skip (no GCP
-      # credentials/env vars are set in this workflow). M3's own Docker
-      # build resolves fastDICOMstructure and fastDICOMattrs by the same
-      # default sibling-directory convention as this step (both checked
-      # out under the same workspace root), so no FASTDICOMSTRUCTURE_REPO/
-      # FASTDICOMATTRS_REPO override is needed here.
-      - name: Test
+      - name: Test (M3 container validation)
         working-directory: fastDICOMgateway
         env:
           FASTDICOMATTRS_LIB: ${{ github.workspace }}/fastDICOMattrs/build/libfastdicomattrs_c.so
-        run: python -m pytest -v
+        run: python -m pytest -v tests/test_m3_validation.py
