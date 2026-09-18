@@ -1,0 +1,144 @@
+{
+  "milestone": "M4",
+  "run_id": "20260908T183216Z-36045",
+  "gateway_commit": "1fc9e4886a8c429c2e2f23aad7fcd39e936612e2",
+  "structure_commit": "4eb44cb45cc87df5527dfe837f7c4b08e9248c0f",
+  "project": "<redacted-gcp-project>",
+  "region": "us-central1",
+  "cloud_run_service": "fastdicom-gateway",
+  "revision": "fastdicom-gateway-00002-nnn",
+  "image": "us-central1-docker.pkg.dev/<redacted-gcp-project>/fastdicom-gateway/fastdicom-gateway:m4",
+  "image_digest": "sha256:7ef411b149e8e90c987693e3278e87f31177806a011d4d747797df56a308c125",
+  "deployment": {
+    "service": "fastdicom-gateway",
+    "project": "<redacted-gcp-project>",
+    "region": "us-central1",
+    "revision": "fastdicom-gateway-00002-nnn",
+    "url": "https://<redacted-cloud-run-url>",
+    "image": "us-central1-docker.pkg.dev/<redacted-gcp-project>/fastdicom-gateway/fastdicom-gateway:m4",
+    "resources": {
+      "limits": {
+        "cpu": "1",
+        "memory": "512Mi"
+      }
+    },
+    "concurrency": 80,
+    "timeout_seconds": 60,
+    "service_account": "<redacted-project-number>-compute@developer.gserviceaccount.com",
+    "ingress": "all",
+    "allow_unauthenticated": true,
+    "env_vars_explicitly_set": []
+  },
+  "test_window": {
+    "start": "2026-09-08T18:32:19.180263+00:00",
+    "end": "2026-09-08T18:32:35.625743+00:00"
+  },
+  "log_entries_queried": 13,
+  "http_request_fields_observed": {
+    "fields_observed": [
+      "latency",
+      "protocol",
+      "remoteIp",
+      "requestMethod",
+      "requestSize",
+      "requestUrl",
+      "responseSize",
+      "serverIp",
+      "status",
+      "userAgent"
+    ],
+    "note": "requestSize/responseSize are byte counts only; no field carrying request/response body content was observed in any queried entry."
+  },
+  "scenarios": [
+    {
+      "name": "successful_transform",
+      "scenario_id": "A",
+      "description": "Valid DICOM with all three fixed patient canaries, a private element, Pixel Data, and a per-run canary in an untouched tag.",
+      "result": "PASS",
+      "http_status": 200,
+      "window": {
+        "start": "14:32:19.180472",
+        "end": "14:32:19.290960"
+      },
+      "canary_in_application_logs": false,
+      "canary_in_cloud_run_logs": false,
+      "checks": {
+        "http_status_200": true,
+        "content_type_application_dicom": true,
+        "response_nonempty": true,
+        "patient_name_absent_from_output": true,
+        "patient_id_absent_from_output": true,
+        "patient_birth_date_absent_from_output": true,
+        "demo_patient_id_present_in_output": true,
+        "pixel_data_preserved": true,
+        "run_canary_present_in_output": true,
+        "output_reparses_cleanly": true
+      },
+      "notes": []
+    },
+    {
+      "name": "malformed_input",
+      "scenario_id": "B",
+      "description": "Non-DICOM bytes (no preamble/DICM magic) with a per-run canary embedded as raw ASCII.",
+      "result": "PASS",
+      "http_status": 400,
+      "window": {
+        "start": "14:32:23.321794",
+        "end": "14:32:23.418461"
+      },
+      "canary_in_application_logs": false,
+      "canary_in_cloud_run_logs": false,
+      "checks": {
+        "http_status_4xx": true,
+        "content_type_not_dicom": true,
+        "no_dicom_result_produced": true,
+        "no_traceback_in_response": true,
+        "malformed_bytes_not_echoed": true
+      },
+      "notes": []
+    },
+    {
+      "name": "parser_rejected_truncated_pixel_data",
+      "scenario_id": "C",
+      "description": "Syntactically DICOM-like input (valid preamble/File Meta) truncated mid-Pixel-Data, producing a non-info structural diagnostic.",
+      "result": "PASS",
+      "http_status": 400,
+      "window": {
+        "start": "14:32:27.418773",
+        "end": "14:32:27.517823"
+      },
+      "canary_in_application_logs": false,
+      "canary_in_cloud_run_logs": false,
+      "checks": {
+        "http_status_4xx": true,
+        "content_type_not_dicom": true,
+        "no_traceback_in_response": true
+      },
+      "notes": []
+    },
+    {
+      "name": "internal_write_unsupported",
+      "scenario_id": "D",
+      "description": "Valid, unmodified Implicit VR Little Endian input (no targeted patient tags, no private elements) -- fastDICOMstructure's write() returns Unsupported for this documented case, surfacing as a natural 500.",
+      "result": "PASS",
+      "http_status": 500,
+      "window": {
+        "start": "14:32:31.518141",
+        "end": "14:32:31.625511"
+      },
+      "canary_in_application_logs": false,
+      "canary_in_cloud_run_logs": false,
+      "checks": {
+        "http_status_500": true,
+        "no_traceback_in_response": true,
+        "no_dicom_element_values_in_response": true
+      },
+      "notes": []
+    }
+  ],
+  "canary_in_application_logs": false,
+  "canary_in_cloud_run_logs": false,
+  "application_log_hits": [],
+  "cloud_run_request_log_hits": [],
+  "overall_result": "PASS"
+}

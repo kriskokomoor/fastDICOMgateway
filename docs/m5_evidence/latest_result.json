@@ -1,0 +1,99 @@
+{
+  "milestone": "M5",
+  "run_id": "20260908T222038Z-38506",
+  "gateway_commit": "d59727208fd784f8b801d7bb876d48cb8e40d0cf",
+  "structure_commit": "4eb44cb45cc87df5527dfe837f7c4b08e9248c0f",
+  "project": "<redacted-gcp-project>",
+  "region": "us-central1",
+  "cloud_run_service": "fastdicom-gateway",
+  "cloud_run_revision": "fastdicom-gateway-00003-lg8",
+  "healthcare_dataset": "fastdicom-m5",
+  "dicom_store": "approved-dicom",
+  "gateway_service_account": "fastdicom-gateway-m5@<redacted-gcp-project>.iam.gserviceaccount.com",
+  "source_bytes": 764,
+  "transformed_bytes": 674,
+  "store_http_status": 200,
+  "receipt": {
+    "status": "stored",
+    "study_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000001",
+    "series_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000002",
+    "sop_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000003"
+  },
+  "source": {
+    "patient_name_present": true,
+    "patient_id_value": "SECRET-123456789",
+    "patient_id_is_demo": false,
+    "patient_id_is_source_value": true,
+    "birth_date_present": true,
+    "private_element_present": true,
+    "pixel_data_sha256": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+    "study_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000001",
+    "series_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000002",
+    "sop_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000003"
+  },
+  "transformed": {
+    "patient_name_present": false,
+    "patient_id_value": "DEMO",
+    "patient_id_is_demo": true,
+    "patient_id_is_source_value": false,
+    "birth_date_present": false,
+    "private_element_present": false,
+    "pixel_data_sha256": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+    "study_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000001",
+    "series_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000002",
+    "sop_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000003"
+  },
+  "retrieved": {
+    "patient_name_present": false,
+    "patient_id_value": "DEMO",
+    "patient_id_is_demo": true,
+    "patient_id_is_source_value": false,
+    "birth_date_present": false,
+    "private_element_present": false,
+    "pixel_data_sha256": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+    "study_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000001",
+    "series_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000002",
+    "sop_instance_uid": "1.2.826.0.1.3680043.8.498.10000000000003"
+  },
+  "comparison": {
+    "patient_name_present": {
+      "source": true,
+      "transformed": false,
+      "stored": false
+    },
+    "patient_id_is_demo": {
+      "source": false,
+      "transformed": true,
+      "stored": true
+    },
+    "birth_date_present": {
+      "source": true,
+      "transformed": false,
+      "stored": false
+    },
+    "private_element_present": {
+      "source": true,
+      "transformed": false,
+      "stored": false
+    },
+    "pixel_data_sha256": {
+      "source": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+      "transformed": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+      "stored": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108"
+    }
+  },
+  "pixel_hash_match": true,
+  "policy_correctly_applied_end_to_end": true,
+  "uids_match_receipt": true,
+  "source_canary_in_stored_object": false,
+  "source_canary_in_cloud_run_logs": false,
+  "cloud_run_log_canary_hits": [],
+  "healthcare_data_access_audit_logging_enabled": false,
+  "healthcare_audit_activity_records_in_window": [],
+  "cost_accounting": {
+    "healthcare_store_requests": 1,
+    "healthcare_retrieve_requests": 1,
+    "retained_dicom_bytes": 674
+  },
+  "overall_result": "PASS"
+}

@@ -1,0 +1,104 @@
+{
+  "kind": "post_remediation_confirmatory_evidence",
+  "not_a_new_milestone": true,
+  "milestone_refreshed": "M5",
+  "boundary": "Healthcare API durable store (STOW-RS submit, WADO-RS retrieve); gateway code executed in-process, not via a redeployed Cloud Run revision",
+  "gateway_commit": "2467a0f54b9445e4024d94145b7d3277ceca07ff",
+  "structure_commit": "ecba5926e23e4da10d1642c47d1d8df13dc5e4b0",
+  "execution_timestamp_utc": "2026-09-09T21:03:20.382502+00:00",
+  "relationship_to_original_milestone_evidence": "Reuses the same Healthcare API dataset/store (fastdicom-m5/approved-dicom) and the same independent-retrieval methodology (m5.py's retrieve_instance/_structural_snapshot) as docs/M5_APPROVED_PERSISTENCE_VALIDATION.md's frozen evidence, under a fixture with a nested PatientID the original M5 fixture did not have. A new, distinct instance was stored (SOPInstanceUID 1.2.826.0.1.3680043.8.498.30000000000003); the original M5 canonical instance (...10000000000001/2/3) was not touched, read, or deleted. Unlike original M5, both the STOW-RS submission and the WADO-RS retrieval here used this session's own gcloud ADC identity (project owner), not a separate dedicated gateway service account -- the identity-separation property M5 established is not re-tested by this refresh, only the transform/store/retrieve mechanics and the corrected recursive policy are.",
+  "result": {
+    "run_id": "20260909T210316Z",
+    "gateway_commit": "2467a0f54b9445e4024d94145b7d3277ceca07ff",
+    "structure_commit": "ecba5926e23e4da10d1642c47d1d8df13dc5e4b0",
+    "project": "<redacted-gcp-project>",
+    "region": "us-central1",
+    "healthcare_dataset": "fastdicom-m5",
+    "dicom_store": "approved-dicom",
+    "execution_mode": "in_process_testclient_not_cloud_run",
+    "test_start_iso": "2026-09-09T21:03:12.510123+00:00",
+    "test_end_iso": "2026-09-09T21:03:16.734332+00:00",
+    "source_bytes": 776,
+    "transformed_bytes": 662,
+    "store_http_status": 200,
+    "receipt": {
+      "status": "stored",
+      "study_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000001",
+      "series_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000002",
+      "sop_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000003"
+    },
+    "source": {
+      "patient_name_present": true,
+      "patient_id_value": "SECRET-123456789",
+      "patient_id_is_demo": false,
+      "patient_id_is_source_value": true,
+      "birth_date_present": true,
+      "private_element_present": true,
+      "pixel_data_sha256": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+      "study_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000001",
+      "series_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000002",
+      "sop_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000003"
+    },
+    "transformed": {
+      "patient_name_present": false,
+      "patient_id_value": "DEMO",
+      "patient_id_is_demo": true,
+      "patient_id_is_source_value": false,
+      "birth_date_present": false,
+      "private_element_present": false,
+      "pixel_data_sha256": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+      "study_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000001",
+      "series_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000002",
+      "sop_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000003"
+    },
+    "retrieved": {
+      "patient_name_present": false,
+      "patient_id_value": "DEMO",
+      "patient_id_is_demo": true,
+      "patient_id_is_source_value": false,
+      "birth_date_present": false,
+      "private_element_present": false,
+      "pixel_data_sha256": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+      "study_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000001",
+      "series_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000002",
+      "sop_instance_uid": "1.2.826.0.1.3680043.8.498.30000000000003"
+    },
+    "comparison": {
+      "top_level_patient_name_present": {
+        "source": true,
+        "transformed": false,
+        "retrieved": false
+      },
+      "top_level_patient_id_is_demo": {
+        "source": false,
+        "transformed": true,
+        "retrieved": true
+      },
+      "top_level_birth_date_present": {
+        "source": true,
+        "transformed": false,
+        "retrieved": false
+      },
+      "private_element_present": {
+        "source": true,
+        "transformed": false,
+        "retrieved": false
+      },
+      "pixel_data_sha256": {
+        "source": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+        "transformed": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108",
+        "retrieved": "fdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108"
+      },
+      "nested_patient_id_values_retrieved": [
+        "DEMO"
+      ]
+    },
+    "pixel_hash_match": true,
+    "top_level_policy_correctly_applied_end_to_end": true,
+    "nested_policy_correctly_applied_end_to_end": true,
+    "nested_source_canary_absent_after_independent_retrieval": true,
+    "source_canary_in_stored_object": false,
+    "retrieved_object_parses_with_pydicom": true,
+    "overall_result": "PASS"
+  }
+}

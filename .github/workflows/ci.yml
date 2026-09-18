@@ -1,0 +1,87 @@
+name: CI
+
+# Ordinary push/PR validation only -- this repo's real cloud evidence
+# (M4 Cloud Run, M5 Healthcare API) is a separate, deliberately opt-in-gated
+# concern (see tests/test_m4_validation.py / test_m5's validation harness),
+# never run here: no GCP credentials exist in this workflow, so those live
+# tests self-skip automatically. See docs/EVIDENCE_INDEX.md for where that
+# evidence actually lives.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fastDICOMgateway
+        uses: actions/checkout@v5
+        with:
+          path: fastDICOMgateway
+
+      # fastdicom_gateway.transform imports fastdicomstructure at test time
+      # (no mocking), which since the A0 semantic-engine extraction is a
+      # pure-Python policy/orchestration layer with no engine of its own --
+      # it re-exports fastdicomattrs' DICOM parser/writer/ABI. Both are
+      # checked out as true sibling directories, matching this project's
+      # own local development convention (README.md "Prerequisites"); M3's
+      # container build also needs both as named Docker build contexts
+      # (see Dockerfile's header comment).
+      # TODO(release): pin `ref` on both checkouts below to the exact
+      # fastDICOMstructure/fastDICOMattrs release tags once they are
+      # published (see RELEASE_PROVENANCE.md). Currently unpinned
+      # (default-branch heads) rather than referencing an internal,
+      # non-public commit identifier.
+      - name: Checkout fastDICOMstructure
+        uses: actions/checkout@v5
+        with:
+          repository: kriskokomoor/fastDICOMstructure
+          path: fastDICOMstructure
+
+      - name: Checkout fastDICOMattrs
+        uses: actions/checkout@v5
+        with:
+          repository: kriskokomoor/fastDICOMattrs
+          path: fastDICOMattrs
+
+      - name: Install strace
+        run: sudo apt-get update && sudo apt-get install -y strace
+
+      # ABI only, no tests/bench -- this workflow doesn't need
+      # fastDICOMattrs' own test suite (that repository verifies itself in
+      # its own CI); it just needs the compiled shared library
+      # fastdicom_gateway.transform loads (via fastdicomstructure's
+      # re-export) through FASTDICOMATTRS_LIB.
+      - name: Build fastDICOMattrs (ABI only)
+        working-directory: fastDICOMattrs
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+            -DFDS_BUILD_TESTS=OFF -DFDS_BUILD_BENCH=OFF -DFDS_BUILD_ABI=ON
+          cmake --build build --parallel
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Install fastDICOMgateway
+        working-directory: fastDICOMgateway
+        run: python -m pip install -e ".[dev]"
+
+      # Runs the full existing suite, including M2's strace-observed and
+      # M3's real (local, credential-free) Docker validation -- both
+      # already part of this suite whenever strace/docker are available,
+      # not added here. M4/M5's live-cloud tests self-skip (no GCP
+      # credentials/env vars are set in this workflow). M3's own Docker
+      # build resolves fastDICOMstructure and fastDICOMattrs by the same
+      # default sibling-directory convention as this step (both checked
+      # out under the same workspace root), so no FASTDICOMSTRUCTURE_REPO/
+      # FASTDICOMATTRS_REPO override is needed here.
+      - name: Test
+        working-directory: fastDICOMgateway
+        env:
+          FASTDICOMATTRS_LIB: ${{ github.workspace }}/fastDICOMattrs/build/libfastdicomattrs_c.so
+        run: python -m pytest -v

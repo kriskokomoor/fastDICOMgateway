@@ -1,0 +1,21 @@
+# Not needed in the image (or, for validation/tests, deliberately kept out
+# of the runtime image -- see docs/M3_CONTAINER_VALIDATION.md "Minimal
+# runtime"). This repo's Dockerfile COPYs specific paths rather than `COPY
+# . .`, so most of these only matter if that ever changes -- kept anyway as
+# the documented, enforced boundary.
+.git
+.gitignore
+.dockerignore
+Dockerfile*
+
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+
+tests
+docs
+src/fastdicom_gateway/validation
+
+*.egg-info

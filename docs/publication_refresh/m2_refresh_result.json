@@ -1,0 +1,157 @@
+{
+  "kind": "post_remediation_confirmatory_evidence",
+  "not_a_new_milestone": true,
+  "milestone_refreshed": "M2",
+  "boundary": "bare host process (strace-observed)",
+  "gateway_commit": "2467a0f54b9445e4024d94145b7d3277ceca07ff",
+  "structure_commit": "ecba5926e23e4da10d1642c47d1d8df13dc5e4b0",
+  "execution_timestamp_utc": "2026-09-09T21:00:34.587444+00:00",
+  "relationship_to_original_milestone_evidence": "Same observation apparatus (m2.py) and same Scenarios A/B/C as docs/M2_PERSISTENCE_BOUNDARY_VALIDATION.md's frozen evidence. Scenario D is replaced with the corrected acceptance-boundary check (scenarios_publication_refresh.run_scenario_d_corrected); the frozen M2 evidence and its Scenario D (expecting HTTP 500) are unchanged and remain historically accurate for the implementation they were generated against.",
+  "result": {
+    "milestone": "M2",
+    "run_id": "20260909T210032Z-8009ccdf",
+    "gateway_commit": "2467a0f54b9445e4024d94145b7d3277ceca07ff",
+    "structure_commit": "ecba5926e23e4da10d1642c47d1d8df13dc5e4b0",
+    "environment": {
+      "os": "Linux 6.8.0-138-generic",
+      "python": "3.14.2",
+      "strace_available": true,
+      "strace_version": "strace -- version 5.16"
+    },
+    "workspace": "/tmp/fastdicom_gateway_m2_mc81vg_w",
+    "scanned_areas": [
+      {
+        "area": "gateway_repo",
+        "root": "/path/to/fastDICOMgateway",
+        "excluded": [
+          ".git",
+          ".venv",
+          ".pytest_cache",
+          "src/fastdicom_gateway/validation",
+          "tests"
+        ]
+      },
+      {
+        "area": "structure_repo",
+        "root": "/path/to/fastDICOMstructure",
+        "excluded": [
+          ".git",
+          "build",
+          "build-release"
+        ]
+      },
+      {
+        "area": "system_temp_dir",
+        "root": "/tmp",
+        "excluded": [
+          "/tmp/fastdicom_gateway_m2_mc81vg_w"
+        ]
+      }
+    ],
+    "strace_parse": {
+      "total_lines": 4451,
+      "parsed_lines": 4448,
+      "unparsed_lines": 3
+    },
+    "non_request_time_filesystem_writes": {},
+    "traceback_present_in_logs": false,
+    "scenarios": [
+      {
+        "name": "successful_transform",
+        "scenario_id": "A",
+        "description": "Valid DICOM with all three fixed patient canaries, a private element, Pixel Data, and a per-run canary in an untouched tag.",
+        "result": "PASS",
+        "http_status": 200,
+        "window": {
+          "start": "17:00:33.682528",
+          "end": "17:00:33.687206"
+        },
+        "canary_in_application_logs": false,
+        "canary_in_observed_application_artifacts": false,
+        "unexpected_filesystem_writes": [],
+        "checks": {
+          "http_status_200": true,
+          "content_type_application_dicom": true,
+          "response_nonempty": true,
+          "patient_name_absent_from_output": true,
+          "patient_id_absent_from_output": true,
+          "patient_birth_date_absent_from_output": true,
+          "demo_patient_id_present_in_output": true,
+          "pixel_data_preserved": true,
+          "run_canary_present_in_output": true,
+          "output_reparses_cleanly": true
+        },
+        "notes": []
+      },
+      {
+        "name": "malformed_input",
+        "scenario_id": "B",
+        "description": "Non-DICOM bytes (no preamble/DICM magic) with a per-run canary embedded as raw ASCII.",
+        "result": "PASS",
+        "http_status": 400,
+        "window": {
+          "start": "17:00:33.808468",
+          "end": "17:00:33.812101"
+        },
+        "canary_in_application_logs": false,
+        "canary_in_observed_application_artifacts": false,
+        "unexpected_filesystem_writes": [],
+        "checks": {
+          "http_status_4xx": true,
+          "content_type_not_dicom": true,
+          "no_dicom_result_produced": true,
+          "no_traceback_in_response": true,
+          "malformed_bytes_not_echoed": true
+        },
+        "notes": []
+      },
+      {
+        "name": "parser_rejected_truncated_pixel_data",
+        "scenario_id": "C",
+        "description": "Syntactically DICOM-like input (valid preamble/File Meta) truncated mid-Pixel-Data, producing a non-info structural diagnostic.",
+        "result": "PASS",
+        "http_status": 400,
+        "window": {
+          "start": "17:00:33.912325",
+          "end": "17:00:33.915742"
+        },
+        "canary_in_application_logs": false,
+        "canary_in_observed_application_artifacts": false,
+        "unexpected_filesystem_writes": [],
+        "checks": {
+          "http_status_4xx": true,
+          "content_type_not_dicom": true,
+          "no_traceback_in_response": true
+        },
+        "notes": []
+      },
+      {
+        "name": "acceptance_boundary_rejection",
+        "scenario_id": "D",
+        "description": "Valid, unmodified Implicit VR Little Endian input (no targeted patient tags, no private elements) -- the corrected gateway now rejects this at the acceptance boundary (reason=unsupported_transfer_syntax) before any policy mutation or serialization is attempted, for both /dicom and /dicom/store, rather than reaching the historical internal write-Unsupported/500 path scenarios.run_scenario_d still checks for. See ADVERSARIAL_REMEDIATION_A.md.",
+        "result": "PASS",
+        "http_status": 400,
+        "window": {
+          "start": "17:00:34.015954",
+          "end": "17:00:34.022511"
+        },
+        "canary_in_application_logs": false,
+        "canary_in_observed_application_artifacts": false,
+        "unexpected_filesystem_writes": [],
+        "checks": {
+          "http_status_400": true,
+          "content_type_not_dicom": true,
+          "reason_is_unsupported_transfer_syntax": true,
+          "no_traceback_in_response": true,
+          "no_dicom_element_values_in_response": true,
+          "store_endpoint_http_status_400": true,
+          "store_endpoint_reason_is_unsupported_transfer_syntax": true,
+          "store_endpoint_no_dicom_element_values_in_response": true
+        },
+        "notes": []
+      }
+    ],
+    "filesystem_scan_hits": [],
+    "overall_result": "PASS"
+  }
+}

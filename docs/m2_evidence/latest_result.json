@@ -1,0 +1,142 @@
+{
+  "milestone": "M2",
+  "run_id": "20260908T164723Z-c1bd4087",
+  "gateway_commit": "03f135294856d9a7b3291e9f6814b0ce5918275e",
+  "structure_commit": "4eb44cb45cc87df5527dfe837f7c4b08e9248c0f",
+  "environment": {
+    "os": "Linux 6.8.0-138-generic",
+    "python": "3.14.2",
+    "strace_available": true,
+    "strace_version": "strace -- version 5.16"
+  },
+  "workspace": "/tmp/fastdicom_gateway_m2_yfzej934",
+  "scanned_areas": [
+    {
+      "area": "gateway_repo",
+      "root": "/path/to/fastDICOMgateway",
+      "excluded": [
+        ".git",
+        ".venv",
+        ".pytest_cache",
+        "src/fastdicom_gateway/validation",
+        "tests"
+      ]
+    },
+    {
+      "area": "structure_repo",
+      "root": "/path/to/fastDICOMstructure",
+      "excluded": [
+        ".git",
+        "build",
+        "build-release"
+      ]
+    },
+    {
+      "area": "system_temp_dir",
+      "root": "/tmp",
+      "excluded": [
+        "/tmp/fastdicom_gateway_m2_yfzej934"
+      ]
+    }
+  ],
+  "strace_parse": {
+    "total_lines": 3210,
+    "parsed_lines": 3207,
+    "unparsed_lines": 3
+  },
+  "non_request_time_filesystem_writes": {},
+  "traceback_present_in_logs": true,
+  "scenarios": [
+    {
+      "name": "successful_transform",
+      "scenario_id": "A",
+      "description": "Valid DICOM with all three fixed patient canaries, a private element, Pixel Data, and a per-run canary in an untouched tag.",
+      "result": "PASS",
+      "http_status": 200,
+      "window": {
+        "start": "12:47:24.267006",
+        "end": "12:47:24.270199"
+      },
+      "canary_in_application_logs": false,
+      "canary_in_observed_application_artifacts": false,
+      "unexpected_filesystem_writes": [],
+      "checks": {
+        "http_status_200": true,
+        "content_type_application_dicom": true,
+        "response_nonempty": true,
+        "patient_name_absent_from_output": true,
+        "patient_id_absent_from_output": true,
+        "patient_birth_date_absent_from_output": true,
+        "demo_patient_id_present_in_output": true,
+        "pixel_data_preserved": true,
+        "run_canary_present_in_output": true,
+        "output_reparses_cleanly": true
+      },
+      "notes": []
+    },
+    {
+      "name": "malformed_input",
+      "scenario_id": "B",
+      "description": "Non-DICOM bytes (no preamble/DICM magic) with a per-run canary embedded as raw ASCII.",
+      "result": "PASS",
+      "http_status": 400,
+      "window": {
+        "start": "12:47:24.387618",
+        "end": "12:47:24.391828"
+      },
+      "canary_in_application_logs": false,
+      "canary_in_observed_application_artifacts": false,
+      "unexpected_filesystem_writes": [],
+      "checks": {
+        "http_status_4xx": true,
+        "content_type_not_dicom": true,
+        "no_dicom_result_produced": true,
+        "no_traceback_in_response": true,
+        "malformed_bytes_not_echoed": true
+      },
+      "notes": []
+    },
+    {
+      "name": "parser_rejected_truncated_pixel_data",
+      "scenario_id": "C",
+      "description": "Syntactically DICOM-like input (valid preamble/File Meta) truncated mid-Pixel-Data, producing a non-info structural diagnostic.",
+      "result": "PASS",
+      "http_status": 400,
+      "window": {
+        "start": "12:47:24.492009",
+        "end": "12:47:24.494612"
+      },
+      "canary_in_application_logs": false,
+      "canary_in_observed_application_artifacts": false,
+      "unexpected_filesystem_writes": [],
+      "checks": {
+        "http_status_4xx": true,
+        "content_type_not_dicom": true,
+        "no_traceback_in_response": true
+      },
+      "notes": []
+    },
+    {
+      "name": "internal_write_unsupported",
+      "scenario_id": "D",
+      "description": "Valid, unmodified Implicit VR Little Endian input (no targeted patient tags, no private elements) -- fastDICOMstructure's write() returns Unsupported for this documented case, surfacing as a natural 500.",
+      "result": "PASS",
+      "http_status": 500,
+      "window": {
+        "start": "12:47:24.594735",
+        "end": "12:47:24.601206"
+      },
+      "canary_in_application_logs": false,
+      "canary_in_observed_application_artifacts": false,
+      "unexpected_filesystem_writes": [],
+      "checks": {
+        "http_status_500": true,
+        "no_traceback_in_response": true,
+        "no_dicom_element_values_in_response": true
+      },
+      "notes": []
+    }
+  ],
+  "filesystem_scan_hits": [],
+  "overall_result": "PASS"
+}

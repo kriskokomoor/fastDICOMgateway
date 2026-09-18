@@ -1,0 +1,79 @@
+{
+  "gateway_commit": "2467a0f54b9445e4024d94145b7d3277ceca07ff",
+  "structure_commit": "ecba5926e23e4da10d1642c47d1d8df13dc5e4b0",
+  "validation1": {
+    "validation": 1,
+    "transfer_syntax": "Explicit VR Little Endian",
+    "nested_canary": "NESTED_SQ_CANARY_VALIDATION_A1_DO_NOT_PERSIST",
+    "source_bytes_len": 722,
+    "source_bytes_sha256": "6a8d817db47efab3b533944e082a1d6f0c483fd7cfaa17c76cd761ea9d553bf0",
+    "pretransform_sequence_found": true,
+    "pretransform_sequence_is_sequence": true,
+    "pretransform_nested_patient_id_values": [
+      "NESTED_SQ_CANARY_VALIDATION_A1_DO_NOT_PERSIST"
+    ],
+    "pretransform_nested_canary_visible_as_structured_element": true,
+    "transform_process_succeeded": true,
+    "transform_process_error": null,
+    "output_bytes_len": 594,
+    "output_bytes_sha256": "342ccd0fcf666c50025c755780302d63d56523d65c1eaa333f6c65152b650809",
+    "elements_touched": 3,
+    "private_elements_removed": 1,
+    "top_patient_name_absent_from_output_bytes": true,
+    "top_patient_id_absent_from_output_bytes": true,
+    "top_patient_birth_date_absent_from_output_bytes": true,
+    "demo_patient_id_present_in_output_bytes": true,
+    "nested_canary_present_in_output_bytes": true,
+    "output_reparses_with_fds_cleanly": true,
+    "output_top_level_patient_id_value": "DEMO",
+    "output_sequence_still_present": true,
+    "output_nested_patient_id_values": [
+      "NESTED_SQ_CANARY_VALIDATION_A1_DO_NOT_PERSIST"
+    ],
+    "output_nested_canary_survives_structurally": true,
+    "pydicom_parses_output": true,
+    "pydicom_top_level_patient_name_present": false,
+    "pydicom_top_level_patient_id": "DEMO",
+    "pydicom_nested_patient_id_values": [
+      "NESTED_SQ_CANARY_VALIDATION_A1_DO_NOT_PERSIST"
+    ],
+    "pydicom_nested_canary_survives": true
+  },
+  "validation2": {
+    "validation": 2,
+    "transfer_syntax": "Implicit VR Little Endian",
+    "nested_canary": "NESTED_SQ_CANARY_VALIDATION_A2_DO_NOT_PERSIST",
+    "source_bytes_len": 356,
+    "source_bytes_sha256": "ca4dded8e951be9e3b34dce82ced5656192d51ece0f05845f4fc4f0502243833",
+    "pretransform_diagnostics": [],
+    "pretransform_blocking_diagnostic_count": 0,
+    "pretransform_sequence_element_found": true,
+    "pretransform_sequence_is_sequence": false,
+    "pretransform_sequence_vr": "UNKNOWN",
+    "pretransform_opaque_value_len": 62,
+    "pretransform_canary_present_in_opaque_value": true,
+    "pretransform_is_modified": false,
+    "transform_process_succeeded": true,
+    "transform_process_error": null,
+    "output_bytes_len": 317,
+    "output_bytes_sha256": "7b184cef8b8c752b6a6e596120e65e92ea7a71537486ce11eb3c2ec8358dadb1",
+    "elements_touched": 1,
+    "private_elements_removed": 0,
+    "top_patient_name_absent_from_output_bytes": true,
+    "nested_canary_present_in_output_bytes": true,
+    "output_reparses_with_fds_cleanly": true,
+    "output_transfer_syntax_uid": "1.2.840.10008.1.2.1",
+    "output_sequence_element_found": true,
+    "output_sequence_is_sequence": false,
+    "output_sequence_vr": "UN",
+    "pydicom_parses_output": true,
+    "pydicom_top_level_patient_name_present": false,
+    "pydicom_other_patient_ids_element_present": true,
+    "pydicom_other_patient_ids_vr": "SQ",
+    "pydicom_nested_patient_id_values_if_expanded_as_sq": [
+      "NESTED_SQ_CANARY_VALIDATION_A2_DO_NOT_PERSIST"
+    ],
+    "pydicom_raw_opaque_value_contains_canary": false,
+    "pydicom_canary_observed_by_any_means": true
+  }
+}
